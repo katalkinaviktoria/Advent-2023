@@ -24,6 +24,16 @@ public func measureTime(_ operation: () -> Void) {
 	print("Execution time: \(elapsedTimeInMilliSeconds) ms")
 }
 
+public func measureAverageTime(timesToRun: Int = 10, _ operation: () -> Void) {
+	var times = [UInt64]()
+	for _ in 0 ..< timesToRun {
+		let time = measureElapsedTime(operation)
+		times.append(time)
+	}
+	let measureAverageTime = times.reduce(0, +) / UInt64(times.count)
+	print("Average time: \(measureAverageTime) ms")
+}
+
 func measureElapsedTime(_ operation: () -> Void) -> UInt64 {
 	let startTime = DispatchTime.now()
 	operation()
@@ -35,12 +45,3 @@ func measureElapsedTime(_ operation: () -> Void) -> UInt64 {
 	return UInt64(elapsedTimeInMilliSeconds)
 }
 
-public func measureAverageTime(timesToRun: Int = 10, _ operation: () -> Void) {
-	var times = [UInt64]()
-	for _ in 0 ..< timesToRun {
-		let time = measureElapsedTime(operation)
-		times.append(time)
-	}
-	let measureAverageTime = times.reduce(0, +) / UInt64(times.count)
-	print("Average time: \(measureAverageTime) ms")
-}

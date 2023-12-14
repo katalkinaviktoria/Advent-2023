@@ -4,7 +4,7 @@ import simd
 
 public enum Day3: Advent {
 	public static func firstStar(for input: String) {
-		let (symbols, numbers) = prepareData(from: input, compareOperation: { $0 != "." })
+		let (symbols, numbers) = prepareData(from: input, comparation: { $0 != "." })
 
 		var adjacentNumbers: Set<Number> = []
 		for symbol in symbols {
@@ -16,7 +16,7 @@ public enum Day3: Advent {
 	}
 
 	public static func secondStar(for input: String) {
-		let (symbols, numbers) = prepareData(from: input, compareOperation: { $0 == "*" || $0.isNumber })
+		let (symbols, numbers) = prepareData(from: input, comparation: { $0 == "*" || $0.isNumber })
 
 		var sum = 0
 		for symbol in symbols {
@@ -60,7 +60,7 @@ private extension Day3 {
 	// MARK: - Common
 
 	static func prepareData(from input: String, 
-							compareOperation: (Character) -> Bool
+							comparation: (Character) -> Bool
 	) -> (symbols: Set<SIMD2<Int>>, numbers: [SIMD2<Int>: Number]) {
 		var symbols: Set<SIMD2<Int>> = []
 		var numbers: [SIMD2<Int>: Number] = [:]
@@ -86,7 +86,7 @@ private extension Day3 {
 
 			x += 1
 
-			guard compareOperation(char) else { continue }
+			guard comparation(char) else { continue }
 
 			let coordinate = SIMD2<Int>(x: x, y: y)
 
@@ -108,7 +108,9 @@ private extension Day3 {
 		return (symbols: symbols, numbers: numbers)
 	}
 
-	static func insertAdjacentNumbers(to adjacentNumbers: inout Set<Number>, for symbol: SIMD2<Int>, from numbers: [SIMD2<Int>: Number]) {
+	static func insertAdjacentNumbers(to adjacentNumbers: inout Set<Number>, 
+									  for symbol: SIMD2<Int>,
+									  from numbers: [SIMD2<Int>: Number]) {
 		let vectorCombinations = [-1, -1, 0, 1, 1].uniquePermutations(ofCount: 2)
 		let surroundingCoordinates = vectorCombinations.map { vector in
 			SIMD2<Int>(x: vector[0], y: vector[1]) &+ symbol

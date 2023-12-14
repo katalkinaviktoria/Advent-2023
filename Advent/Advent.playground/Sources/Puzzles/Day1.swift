@@ -2,21 +2,11 @@ import Foundation
 
 public enum Day1: Advent {
 	public static func firstStar(for input: String) {
-		sum(for: input, operation: calibrationValue)
+		sumOfCalibrationValue(from: input, calculation: calibrationValue)
 	}
 
 	public static func secondStar(for input: String) {
-		sum(for: input, operation: letterCalibrationValue)
-	}
-}
-
-// MARK: - Internal
-
-extension Day1 {
-	static func sum(for input: String, operation: (String) -> Int) {
-		let strings = input.components(separatedBy: .newlines)
-		let sum = strings.reduce(0) { $0 + operation($1) }
-		print("SUM: \(sum)")
+		sumOfCalibrationValue(from: input, calculation: letterCalibrationValue)
 	}
 }
 
@@ -50,6 +40,12 @@ private extension Day1 {
 		}
 	}
 
+	static func sumOfCalibrationValue(from input: String, calculation: (String) -> Int) {
+		let strings = input.components(separatedBy: .newlines)
+		let sum = strings.reduce(0) { $0 + calculation($1) }
+		print("SUM: \(sum)")
+	}
+
 	// MARK: - First star
 
 	static func calibrationValue(from input: String) -> Int {
@@ -60,7 +56,7 @@ private extension Day1 {
 	// MARK: - Second star
 
 	static func letterCalibrationValue(from input: String) -> Int {
-		
+		guard !input.isEmpty else { return 0 }
 		let start = input.startIndex
 		let end = input.index(before: input.endIndex)
 
@@ -69,10 +65,11 @@ private extension Day1 {
 								 indexShift: { $0.index(after:) },
 								 condition: { $0 <= end },
 								 range: { start...$0 }) ?? 0
+
 		let secondNumber = number(from: input,
 								 initialIndex: end,
 								 indexShift: { $0.index(before:) },
-								 condition: { $0 > start },
+								 condition: { $0 >= start },
 								 range: { $0...end }) ?? 0
 
 		return firstNumber * 10 + secondNumber
