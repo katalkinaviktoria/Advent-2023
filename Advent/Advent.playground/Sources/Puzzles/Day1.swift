@@ -40,6 +40,8 @@ private extension Day1 {
 		}
 	}
 
+	// MARK: - Common
+
 	static func sumOfCalibrationValue(from input: String, calculation: (String) -> Int) {
 		let strings = input.components(separatedBy: .newlines)
 		let sum = strings.reduce(0) { $0 + calculation($1) }

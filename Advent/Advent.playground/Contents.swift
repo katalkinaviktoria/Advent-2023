@@ -1,15 +1,15 @@
 import Foundation
 
-let adventDay: Advent.Type = Day4.self
+let adventDay: Advent.Type = Day6.self
 
 do {
-	let input = try adventDay.input(for: "day4")
+	let input = try adventDay.input(for: "day6")
 
-	measureAverageTime({adventDay.firstStar(for: input)})
+	measureTime({adventDay.firstStar(for: input)})
 	reportMemory()
 
-//	measureAverageTime({adventDay.secondStar(for: input)})
-//	reportMemory()
+	measureAverageTime({adventDay.secondStar(for: input)})
+	reportMemory()
 } catch {
 	print(error)
 }

@@ -44,4 +44,3 @@ func measureElapsedTime(_ operation: () -> Void) -> UInt64 {
 
 	return UInt64(elapsedTimeInMilliSeconds)
 }
-

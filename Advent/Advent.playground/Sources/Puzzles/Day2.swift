@@ -18,6 +18,8 @@ private extension Day2 {
 	static var blueRegex = /(?<count>\d+) blue/
 	static var greenRegex = /(?<count>\d+) green/
 
+	// MARK: - Common
+
 	static func sumOfGames(from input: String, calculation: (String) -> Int) {
 		let strings = input.components(separatedBy: .newlines)
 		let sum = strings.reduce(0) { $0 + (calculation($1)) }
@@ -41,6 +43,13 @@ private extension Day2 {
 		return gameNumber
 	}
 
+	static func validate(_ input: String, with max: Int, regex: Regex<(Substring, count: Substring)>) -> Bool {
+		!input.matches(of: regex).contains(where: { result in
+			let current = Int(result.output.count) ?? 0
+			return current > max
+		})
+	}
+
 	// MARK: - Second star
 
 	static func powerOfGame(from input: String) -> Int {
@@ -50,15 +59,6 @@ private extension Day2 {
 		let greenMax = max(from: input, for: greenRegex) ?? 1
 
 		return redMax * greenMax * blueMax
-	}
-
-	// MARK: - Common
-
-	static func validate(_ input: String, with max: Int, regex: Regex<(Substring, count: Substring)>) -> Bool {
-		!input.matches(of: regex).contains(where: { result in
-			let current = Int(result.output.count) ?? 0
-			return current > max
-		})
 	}
 
 	static func max(from input: String, for regex: Regex<(Substring, count: Substring)>) -> Int? {
