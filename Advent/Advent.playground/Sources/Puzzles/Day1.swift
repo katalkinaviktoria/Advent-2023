@@ -48,11 +48,20 @@ private extension Day1 {
 		print("SUM: \(sum)")
 	}
 
+	static func value(with firstDigit: Int?, secondDigit: Int?) -> Int {
+		guard let firstDigit, let secondDigit else {
+			assertionFailure("Value not found")
+			return 0
+		}
+		return firstDigit * 10 + secondDigit
+	}
+
 	// MARK: - First star
 
 	static func calibrationValue(from input: String) -> Int {
+		guard !input.isEmpty else { return 0 }
 		let numbers: Array<Int> = input.compactMap{ $0.isNumber ? $0.wholeNumberValue : nil }
-		return (numbers.first ?? 0) * 10 + (numbers.last ?? 0)
+		return value(with: numbers.first, secondDigit: numbers.last)
 	}
 
 	// MARK: - Second star
@@ -66,15 +75,15 @@ private extension Day1 {
 								 initialIndex: start,
 								 indexShift: { $0.index(after:) },
 								 condition: { $0 <= end },
-								 range: { start...$0 }) ?? 0
+								 range: { start...$0 })
 
 		let secondNumber = number(from: input,
 								 initialIndex: end,
 								 indexShift: { $0.index(before:) },
 								 condition: { $0 >= start },
-								 range: { $0...end }) ?? 0
+								 range: { $0...end })
 
-		return firstNumber * 10 + secondNumber
+		return value(with: firstNumber, secondDigit: secondNumber)
 	}
 
 	static func number(from input: String,

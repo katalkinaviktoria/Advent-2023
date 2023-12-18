@@ -2,11 +2,11 @@ import Foundation
 
 public enum Day6: Advent {
 	public static func firstStar(for input: String) {
-		numberOfWaysToBeat(from: input) { $0.components(separatedBy: .whitespaces) }
+		numberOfWinningWays(from: input) { $0.components(separatedBy: .whitespaces) }
 	}
 
 	public static func secondStar(for input: String) {
-		numberOfWaysToBeat(from: input) { [$0.components(separatedBy: .whitespaces).joined()] }
+		numberOfWinningWays(from: input) { [$0.components(separatedBy: .whitespaces).joined()] }
 	}
 }
 
@@ -16,10 +16,13 @@ private extension Day6 {
 
 	// MARK: - Common
 
-	static func numberOfWaysToBeat(from input: String, components: (Substring) -> [String]) {
+	static func numberOfWinningWays(from input: String, components: (Substring) -> [String]) {
 		let regex = /Time:(?<times>(\s+\d+)+)\nDistance:(?<distances>(\s+\d+)+)/
 		let match = input.firstMatch(of: regex)?.output
-		guard let timeInput = match?.times, let distanceInput = match?.distances else { return }
+		guard let timeInput = match?.times, let distanceInput = match?.distances else {
+			assertionFailure("Input is incorrect")
+			return
+		}
 
 		let times = components(timeInput).compactMap( { Double($0) })
 		let distances = components(distanceInput).compactMap( { Double($0) })

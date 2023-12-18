@@ -39,16 +39,21 @@ private extension Day4 {
 
 	static func score(from input: String) -> Int {
 		let input = input.components(separatedBy: ":").last?.components(separatedBy: "|")
+		guard let winningNumbersInput = input?.first, let otherNumbersInput = input?.last else {
+			assertionFailure("Input is incorrect")
+			return 0
+		}
+
 		var winningNumbers: Set<String> = []
 		var score = 0
 
-		process(input?.first ?? "") { number in
+		process(winningNumbersInput) { number in
 			if !number.isEmpty {
 				winningNumbers.insert(number)
 			}
 		}
 
-		process(input?.last ?? "") { number in
+		process(otherNumbersInput) { number in
 			if !number.isEmpty, winningNumbers.contains(number) {
 				score = score > 0 ? score * 2 : 1
 			}
