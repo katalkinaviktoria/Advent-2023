@@ -4,11 +4,7 @@ public enum Day8: Advent {
 
 	public static func firstStar(for input: String) {
 		let network = network(from: input) { _ in }
-
-		guard let instructions = instructions(from: input) else {
-			assertionFailure("Instructions not found")
-			return
-		}
+		let instructions = instructions(from: input)
 
 		let start = "AAA"
 		let end = "ZZZ"
@@ -33,10 +29,7 @@ public enum Day8: Advent {
 			}
 		}
 
-		guard let instructions = instructions(from: input) else {
-			assertionFailure("Instructions not found")
-			return
-		}
+		let instructions = instructions(from: input)
 
 		let moveTo: (String) -> Bool = { node in
 			if node.last != "Z" {
@@ -87,8 +80,11 @@ private extension Day8 {
 		return nodes
 	}
 
-	static func instructions(from input: String) -> [Instruction]? {
-		guard let instructions = input.firstMatch(of: /(?<instructions>(L|R)+)/)?.output.instructions else { return nil }
+	static func instructions(from input: String) -> [Instruction] {
+		guard let instructions = input.firstMatch(of: /(?<instructions>(L|R)+)/)?.output.instructions else {
+			assertionFailure("Instructions not found")
+			return []
+		}
 		return instructions.compactMap { Instruction(rawValue: $0) }
 	}
 

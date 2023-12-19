@@ -2,11 +2,11 @@ import Foundation
 
 public enum Day4: Advent {
 	public static func firstStar(for input: String) {
-		sumOfPoints(for: input, operation: score)
+		sumOfPoints(for: input)
 	}
 
 	public static func secondStar(for input: String) {
-		//
+		sumOfCards(for: input)
 	}
 }
 
@@ -14,7 +14,24 @@ public enum Day4: Advent {
 
 private extension Day4 {
 
-	// MARK: - Common
+	//MARK: - First star
+
+	static func sumOfPoints(for input: String) {
+		let regex = /Card\s+(?<card>\d+)\:(?<winningNumbers>(\s+\d+)+)\s+\|(?<numbers>(\s+\d+)+)/
+		let input = input.matches(of: regex)
+		let sum: Decimal = input.reduce(0) { partialResult, match in
+			let winningNumbers: Set<String> = Set(match.output.winningNumbers.components(separatedBy: .whitespaces)
+				.compactMap { $0.isEmpty ? nil : $0 })
+			let numbers: Set<String> = Set(match.output.numbers.components(separatedBy: .whitespaces)
+				.compactMap { $0.isEmpty ? nil : $0 })
+			let countOfWinningNumbers = winningNumbers.intersection(numbers).count
+			let score = countOfWinningNumbers > 0 ? pow(2, countOfWinningNumbers - 1) : 0
+			return partialResult + score
+		}
+		print("SUM: \(sum)")
+	}
+
+	//MARK: - First star - faster
 
 	static func sumOfPoints(for input: String, operation: (String) -> Int) {
 		let strings = input.components(separatedBy: .newlines)
@@ -35,9 +52,7 @@ private extension Day4 {
 		operation(tmpNumber)
 	}
 
-	//MARK: - First star
-
-	static func score(from input: String) -> Int {
+	static func fasterScore(from input: String) -> Int {
 		let input = input.components(separatedBy: ":").last?.components(separatedBy: "|")
 		guard let winningNumbersInput = input?.first, let otherNumbersInput = input?.last else {
 			assertionFailure("Input is incorrect")
@@ -63,4 +78,8 @@ private extension Day4 {
 	}
 
 	// MARK: - Second star
+
+	static func sumOfCards(for input: String) {
+		//
+	}
 }

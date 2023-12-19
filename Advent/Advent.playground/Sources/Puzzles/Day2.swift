@@ -2,18 +2,17 @@ import Foundation
 
 public enum Day2: Advent {
 	public static func firstStar(for input: String) {
-		sumOfGames(from: input, calculation: possibleGameID)
+		sumOfGames(from: input, process: possibleGameID)
 	}
 
 	public static func secondStar(for input: String) {
-		sumOfGames(from: input, calculation: powerOfGame)
+		sumOfGames(from: input, process: powerOfGame)
 	}
 }
 
 // MARK: - Private
 
 private extension Day2 {
-	static var gameRegex = /Game (?<game>\d+):/
 
 	enum Color: String, CaseIterable {
 		case red
@@ -39,42 +38,35 @@ private extension Day2 {
 
 	// MARK: - Common
 
-	static func sumOfGames(from input: String, calculation: (String) -> Int) {
-		let strings = input.components(separatedBy: .newlines)
-		let sum = strings.reduce(0) { $0 + (calculation($1)) }
+	static func sumOfGames(from input: String,
+						   process: (Regex<(Substring, game: Substring, details: Substring)>.Match) -> Int?) {
+		let gameRegex = /Game (?<game>\d+):(?<details>.*)/
+		let games = input.matches(of: gameRegex).compactMap { process($0) }
+		let sum = games.reduce(0, +)
 		print("SUM: \(sum)")
 	}
 
 	// MARK: - First star
 
-	static func possibleGameID(from input: String) -> Int {
-		guard !input.isEmpty else { return 0 }
-
-		let game = try? gameRegex.firstMatch(in: input)?.output.game
-		guard let game = game, let gameNumber = Int(game) else {
-			assertionFailure("Game not found")
-			return 0
-		}
-
-		guard Color.allCases.reduce(true, { $0 && validate(input, for: $1) }) else { return 0 }
-		return gameNumber
+	static func possibleGameID(from match: Regex<(Substring, game: Substring, details: Substring)>.Match) -> Int? {
+		guard Color.allCases.reduce(true, { $0 && validate(match.output.details, for: $1) }) else { return nil }
+		return Int(String(match.output.game))
 	}
 
-	static func validate(_ input: String, for color: Color) -> Bool {
+	static func validate(_ input: Substring, for color: Color) -> Bool {
 		!input.matches(of: color.countRegex).contains(where: { result in
-			let current = Int(result.output.count) ?? 0
+			guard let current = Int(result.output.count) else { return false }
 			return current > color.maxCount
 		})
 	}
 
 	// MARK: - Second star
 
-	static func powerOfGame(from input: String) -> Int {
-		guard !input.isEmpty else { return 0 }
-		return Color.allCases.reduce(1) { $0 * validate(max(from: input, for: $1.countRegex), for: $1) }
+	static func powerOfGame(from match: Regex<(Substring, game: Substring, details: Substring)>.Match) -> Int? {
+		Color.allCases.reduce(1) { $0 * validate(max(from: match.output.details, for: $1.countRegex), for: $1) }
 	}
 
-	static func max(from input: String, for regex: Regex<(Substring, count: Substring)>) -> Int? {
+	static func max(from input: Substring, for regex: Regex<(Substring, count: Substring)>) -> Int? {
 		input.matches(of: regex).compactMap { Int($0.output.count) }.max()
 	}
 
