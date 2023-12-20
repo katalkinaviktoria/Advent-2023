@@ -70,7 +70,6 @@ public enum Day19: Advent {
 	public static func secondStar(for input: String) {
 		//
 	}
-
 }
 
 // MARK: - Private
