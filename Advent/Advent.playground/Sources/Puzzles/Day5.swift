@@ -2,11 +2,29 @@ import Foundation
 
 public enum Day5: Advent {
 	public static func firstStar(for input: String) {
-		minLocation(from: input)
+		let seeds: (Substring) -> [Int] = { seeds in seeds.components(separatedBy: .whitespaces).compactMap { Int($0) }}
+		minLocation(from: input,
+					regex: /seeds:(?<seeds>(\s+\d+)+)/,
+					seeds: seeds,
+					calculate: shiftValue,
+					min: { locations in locations.min() })
 	}
 
 	public static func secondStar(for input: String) {
-		//
+		let seeds: (Substring) -> [Range<Int>] = { seeds in
+			seeds.matches(of: /\s(?<start>\d+)\s(?<length>\d+)/).compactMap { match -> Range<Int>? in
+				guard let start = Int(match.output.start), let length = Int(match.output.length) else {
+					assertionFailure("Seed range not found")
+					return nil
+				}
+				return start..<start + length
+			}
+		}
+		minLocation(from: input,
+					regex: /seeds:(?<seeds>(.*))\n/,
+					seeds: seeds,
+					calculate: shiftRanges,
+					min: { locations in locations.min(by: { $0.lowerBound < $1.lowerBound })?.lowerBound })
 	}
 }
 
@@ -15,6 +33,8 @@ public enum Day5: Advent {
 private extension Day5 {
 
 	// MARK: - Common
+
+	typealias ShiftRange = (range: Range<Int>, shift: Int)
 
 	static var regexes: [Regex<(Substring, map: Substring, Substring)>] = {
 		let soilFromSeedRegex = /seed-to-soil map:\n(?<map>(.+\n)+)/
@@ -30,21 +50,22 @@ private extension Day5 {
 				locationFromHumidityRegex]
 	}()
 
-	//MARK: - First star
-
-	static func minLocation(from input: String) {
-		guard let seedsMatch = input.firstMatch(of: /seeds:(?<seeds>(\s+\d+)+)/) else { return }
-		let seeds = seedsMatch.output.seeds.components(separatedBy: .whitespaces).compactMap { Int($0) }
-
-		var locations: [Int] = []
-
-		for seed in seeds {
-			var regexes = regexes
-			let location = matching(for: seed, input: input, regexes: &regexes)
-			locations.append(location)
+	static func minLocation<T>(from input: String,
+							   regex: Regex<(Substring, seeds: Substring, Substring)>,
+							   seeds: (Substring) -> [T],
+							   calculate: (T, [ShiftRange]) -> [T], 
+							   min: ([T]) -> Int?) {
+		guard let seedsMatch = input.firstMatch(of: regex) else {
+			assertionFailure("Seeds not found")
+			return
 		}
 
-		guard let min = locations.min() else {
+		let seeds = seeds(seedsMatch.output.seeds)
+
+		var regexes = regexes
+		let locations = matching(for: seeds, input: input, regexes: &regexes, calculate: calculate)
+
+		guard let min = min(locations) else {
 			assertionFailure("Location min not found")
 			return
 		}
@@ -52,38 +73,78 @@ private extension Day5 {
 		print("MIN: \(min)")
 	}
 
-	static func matching(for start: Int, input: String, regexes: inout [Regex<(Substring, map: Substring, Substring)>]) -> Int {
-		if regexes.count == 1 {
-			return matching(for: start, input: input, regex: regexes.first!)
+	static func matching<T>(for values: [T],
+							input: String,
+							regexes: inout [Regex<(Substring, map: Substring, Substring)>],
+							calculate: (T, [ShiftRange]) -> [T]) -> [T] {
+		if regexes.count == 1, let regex = regexes.first {
+			return matching(for: values, input: input, regex: regex, calculate: calculate)
 		}
 		let regex = regexes.removeLast()
-		return matching(for: matching(for: start, input: input, regexes: &regexes), input: input, regex: regex)
+		return matching(for: matching(for: values, input: input, regexes: &regexes, calculate: calculate),
+						input: input,
+						regex: regex,
+						calculate: calculate)
 	}
 
-	static func matching(for value: Int, input: String, regex: Regex<(Substring, map: Substring, Substring)>) -> Int {
+	static func matching<T>(for values: [T],
+							input: String,
+							regex: Regex<(Substring, map: Substring, Substring)>,
+							calculate: (T, [ShiftRange]) -> [T]) -> [T] {
 		guard let match = input.firstMatch(of: regex) else {
 			assertionFailure("Match not found")
-			return 0
+			return []
 		}
 
 		let mapRegex = /(?<destinationRangeStart>\d+) (?<sourceRangeStart>\d+) (?<rangeLength>\d+)/
-		typealias FromToMap = (from: Int, to: Int, length: Int)
 
-		let map = match.output.map.matches(of: mapRegex).compactMap { match -> FromToMap? in
+		let map = match.output.map.matches(of: mapRegex).compactMap { match -> ShiftRange? in
 			guard let from = Int(match.output.sourceRangeStart),
 				  let to = Int(match.output.destinationRangeStart),
 				  let length = Int(match.output.rangeLength) else { return nil }
-			return FromToMap(from: from, to: to, length: length)
+			return ShiftRange(range: from..<from + length, shift: to - from)
 		}
 
-		var to = value
-		let range = map.first { ($0.from..<$0.from + $0.length).contains(value) }
-		if let range {
-			to = range.to + value - range.from
-		}
+		let values = values.flatMap { calculate($0, map) }
+		return values
+	}
 
-		return to
+	//MARK: - First star
+
+	static func shiftValue(for value: Int, map: [ShiftRange]) -> [Int] {
+		if let range = map.first(where: { $0.range.contains(value) }) {
+			return [value + range.shift]
+		} else {
+			return [value]
+		}
 	}
 
 	// MARK: - Second star
+
+	static func shiftRanges(for range: Range<Int>, map: [ShiftRange]) -> [Range<Int>] {
+		var ranges: [Range<Int>] = []
+
+		var currentLowerBound = range.lowerBound
+		while currentLowerBound != range.upperBound {
+
+			var upperBound: Int
+			var shift: Int
+
+			if let currentRange = map.first(where: { $0.range.contains(currentLowerBound) }) {
+				upperBound = currentRange.range.upperBound > range.upperBound ? range.upperBound : currentRange.range.upperBound
+				shift = currentRange.shift
+			} else if let minRange = map.filter({ $0.range.lowerBound > currentLowerBound}).min(by: { $0.range.lowerBound < $1.range.lowerBound }) {
+				upperBound = minRange.range.lowerBound > range.upperBound ? range.upperBound : minRange.range.lowerBound
+				shift = 0
+			} else {
+				upperBound = range.upperBound
+				shift = 0
+			}
+
+			ranges.append(currentLowerBound + shift..<upperBound + shift)
+			currentLowerBound = upperBound
+		}
+
+		return ranges
+	}
 }
