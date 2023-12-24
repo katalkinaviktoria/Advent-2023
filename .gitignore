@@ -1,4 +1,5 @@
 .DS_Store
-Advent.xcodeproj/
+Advent.xcodeproj/xcuserdata
+Advent.xcodeproj/project.xcworkspace
 Advent/Advent.playground/Resources/*
 Advent/Advent.playground/playground.xcworkspace/*
