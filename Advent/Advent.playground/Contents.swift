@@ -1,16 +1,16 @@
 import Foundation
 
-let adventDay: Advent.Type = Day9.self
+let adventDay: Advent.Type = Day10.self
 
 do {
-	let resource = String(describing: adventDay).lowercased()
-	let input = try adventDay.input(for: resource, resourceExtension: "txt")
+    let resource = String(describing: adventDay).lowercased()
+    let input = try adventDay.input(for: resource, resourceExtension: "txt")
 
-	measureTime({adventDay.firstStar(for: input)})
-	reportMemory()
+    measureTime({adventDay.firstStar(for: input)})
+    reportMemory()
 
-	measureTime({adventDay.secondStar(for: input)})
-	reportMemory()
+    measureTime({adventDay.secondStar(for: input)})
+    reportMemory()
 } catch {
-	print(error)
+    print(error)
 }
