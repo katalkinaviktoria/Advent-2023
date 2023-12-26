@@ -18,8 +18,8 @@ private extension Day4 {
 
     static func sumOfPoints(for input: String) {
         let regex = /Card\s+(?<card>\d+)\:(?<winningNumbers>(\s+\d+)+)\s+\|(?<numbers>(\s+\d+)+)/
-        let input = input.matches(of: regex)
-        let sum: Decimal = input.reduce(0) { partialResult, match in
+        let matches = input.matches(of: regex)
+        let sum: Decimal = matches.reduce(0) { partialResult, match in
             let winningNumbers: Set<String> = Set(match.output.winningNumbers.components(separatedBy: .whitespaces)
                 .compactMap { $0.isEmpty ? nil : $0 })
             let numbers: Set<String> = Set(match.output.numbers.components(separatedBy: .whitespaces)
@@ -80,6 +80,27 @@ private extension Day4 {
     // MARK: - Second star
 
     static func sumOfCards(for input: String) {
-        //
+        let regex = /Card\s+(?<card>\d+)\:(?<winningNumbers>(\s+\d+)+)\s+\|(?<numbers>(\s+\d+)+)/
+        let matches = input.matches(of: regex)
+        typealias Card = (count: Int, winningCount: Int)
+
+        var cards: [Card] = matches.map { match in
+            let winningNumbers: Set<String> = Set(match.output.winningNumbers.components(separatedBy: .whitespaces)
+                .compactMap { $0.isEmpty ? nil : $0 })
+            let numbers: Set<String> = Set(match.output.numbers.components(separatedBy: .whitespaces)
+                .compactMap { $0.isEmpty ? nil : $0 })
+            let countOfWinningNumbers = winningNumbers.intersection(numbers).count
+            return (1, countOfWinningNumbers)
+        }
+        
+        for index in 0..<cards.count {
+            for copyIndex in 0..<cards[index].winningCount {
+                cards[index + copyIndex + 1].count += cards[index].count
+            }
+        }
+
+        let sum = cards.reduce(0) { $0 + $1.count}
+
+        print("SUM: \(sum)")
     }
 }

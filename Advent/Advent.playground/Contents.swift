@@ -1,6 +1,6 @@
 import Foundation
 
-let adventDay: Advent.Type = Day10.self
+let adventDay: Advent.Type = Day4.self
 
 do {
     let resource = String(describing: adventDay).lowercased()
