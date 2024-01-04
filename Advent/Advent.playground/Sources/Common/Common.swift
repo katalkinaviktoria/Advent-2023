@@ -13,7 +13,7 @@ public func reportMemory() {
 	result != KERN_SUCCESS ? print("Memory used: ? of \(totalMb) Mb") : print("Memory used: \(usedMb) Mb of \(totalMb) Mb")
 }
 
-public func measureTime(_ operation: () -> Void) {
+public func measureTime(_ operation: @autoclosure () -> Void) {
 	let startTime = DispatchTime.now()
 	operation()
 	let endTime = DispatchTime.now()
@@ -24,7 +24,7 @@ public func measureTime(_ operation: () -> Void) {
 	print("Execution time: \(elapsedTimeInMilliSeconds) ms")
 }
 
-public func measureAverageTime(timesToRun: Int = 10, _ operation: () -> Void) {
+public func measureAverageTime(timesToRun: Int = 10, _ operation: @autoclosure () -> Void) {
 	var times = [UInt64]()
 	for _ in 0 ..< timesToRun {
 		let time = measureElapsedTime(operation)
